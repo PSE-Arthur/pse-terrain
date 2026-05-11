@@ -1,0 +1,1252 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>PSE+ · App Terrain</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --vert: #7DC52B;
+    --vert-fonce: #5a9a1e;
+    --vert-clair: #e8f7d5;
+    --noir: #0f1a00;
+    --gris: #f4f8ee;
+    --blanc: #ffffff;
+    --rouge: #e74c3c;
+    --orange: #f39c12;
+    --bleu: #3498db;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; overflow-x: hidden; }
+  body {
+    font-family: 'Outfit', sans-serif;
+    background: var(--gris);
+    color: var(--noir);
+    max-width: 480px;
+    margin: 0 auto;
+  }
+
+  /* ── HEADER ── */
+  .app-header {
+    background: var(--noir);
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky; top: 0; z-index: 200;
+  }
+  .header-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    color: var(--vert);
+    letter-spacing: 2px;
+  }
+  .header-sub { color: rgba(255,255,255,0.45); font-size: 11px; margin-top: 1px; }
+  .header-step {
+    background: var(--vert);
+    color: #fff;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 13px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    letter-spacing: 1px;
+  }
+
+  /* ── SCREENS ── */
+  .screen { display: none; padding: 18px; padding-bottom: 100px; }
+  .screen.active { display: block; }
+
+  /* ── SCREEN TITLES ── */
+  .screen-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+  }
+  .screen-sub { font-size: 13px; color: #777; margin-bottom: 20px; }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--blanc);
+    border-radius: 16px;
+    padding: 18px;
+    margin-bottom: 14px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    border: 1.5px solid transparent;
+  }
+  .card-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #999;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* ── FORM FIELDS ── */
+  .field { margin-bottom: 14px; }
+  .field label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: #555;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+  .field input, .field select, .field textarea {
+    width: 100%;
+    padding: 13px 15px;
+    border: 1.5px solid #e0ecd4;
+    border-radius: 12px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 15px;
+    color: var(--noir);
+    background: var(--gris);
+    outline: none;
+    appearance: none;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus {
+    border-color: var(--vert);
+    background: #fff;
+  }
+  .field textarea { min-height: 70px; resize: vertical; }
+
+  /* ── ARTICLE ROWS ── */
+  .article-row {
+    display: flex;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid #f0f4eb;
+    gap: 12px;
+    position: relative;
+  }
+  .article-row:last-child { border-bottom: none; }
+  .article-check {
+    width: 26px; height: 26px;
+    border-radius: 8px;
+    border: 2px solid #d0e8b0;
+    background: var(--gris);
+    cursor: pointer;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    transition: all 0.15s;
+  }
+  .article-check.checked {
+    background: var(--vert);
+    border-color: var(--vert);
+    color: #fff;
+  }
+  .article-info { flex: 1; min-width: 0; }
+  .article-name { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .article-price { font-size: 11px; color: var(--vert-fonce); font-weight: 500; }
+  .article-qty-wrap { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+  .qty-btn {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    border: none;
+    background: var(--vert-clair);
+    color: var(--vert-fonce);
+    font-size: 18px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+  .qty-btn:active { background: var(--vert); color: #fff; transform: scale(0.92); }
+  .qty-display {
+    width: 42px;
+    text-align: center;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--noir);
+  }
+  .article-delete {
+    width: 28px; height: 28px;
+    border: none;
+    background: #fee;
+    color: var(--rouge);
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  /* SURPLUS BADGE */
+  .surplus-badge {
+    font-size: 10px;
+    background: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffc107;
+    padding: 2px 7px;
+    border-radius: 10px;
+    font-weight: 600;
+    margin-left: 4px;
+  }
+
+  /* ── ADD ARTICLE BUTTON ── */
+  .add-article-btn {
+    width: 100%;
+    padding: 13px;
+    border: 2px dashed var(--vert-clair);
+    border-radius: 12px;
+    background: transparent;
+    color: var(--vert-fonce);
+    font-family: 'Outfit', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 10px;
+    transition: all 0.15s;
+  }
+  .add-article-btn:active { background: var(--vert-clair); }
+
+  /* ── ADD ARTICLE MODAL ── */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 300;
+    align-items: flex-end;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal-sheet {
+    background: #fff;
+    border-radius: 24px 24px 0 0;
+    padding: 24px 20px 40px;
+    width: 100%;
+    max-width: 480px;
+    margin: 0 auto;
+    animation: slideUp 0.25s ease;
+  }
+  @keyframes slideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+  }
+  .modal-handle {
+    width: 40px; height: 4px;
+    background: #ddd;
+    border-radius: 2px;
+    margin: 0 auto 20px;
+  }
+  .modal-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+  }
+  .modal-sub { font-size: 13px; color: #888; margin-bottom: 18px; }
+  .modal-field { margin-bottom: 14px; }
+  .modal-field label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: #555;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+  }
+  .modal-field input, .modal-field select {
+    width: 100%;
+    padding: 13px 15px;
+    border: 1.5px solid #e0ecd4;
+    border-radius: 12px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 15px;
+    background: var(--gris);
+    outline: none;
+  }
+  .modal-field input:focus { border-color: var(--vert); background: #fff; }
+  .modal-confirm {
+    width: 100%;
+    padding: 15px;
+    background: var(--vert);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    letter-spacing: 1px;
+    cursor: pointer;
+    margin-top: 6px;
+  }
+  .modal-cancel {
+    width: 100%;
+    padding: 12px;
+    background: transparent;
+    color: #aaa;
+    border: none;
+    font-family: 'Outfit', sans-serif;
+    font-size: 14px;
+    cursor: pointer;
+    margin-top: 8px;
+  }
+
+  /* ── RETOUR COMPARISON ── */
+  .retour-row {
+    display: flex;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid #f0f4eb;
+    gap: 10px;
+  }
+  .retour-row:last-child { border-bottom: none; }
+  .retour-name { flex: 1; font-size: 14px; font-weight: 600; }
+  .retour-sortie {
+    font-size: 12px;
+    color: #888;
+    background: #f5f5f5;
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .retour-qty-wrap { display: flex; align-items: center; gap: 5px; }
+  .retour-status {
+    width: 28px; height: 28px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+  .status-ok { background: #d4f7d4; }
+  .status-warn { background: #fff3cd; }
+  .status-bad { background: #fde; }
+
+  /* ── SUMMARY ── */
+  .summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #f0f4eb;
+    font-size: 14px;
+  }
+  .summary-row:last-child { border-bottom: none; }
+  .summary-label { color: #666; }
+  .summary-value { font-weight: 700; }
+  .tag-ok { color: var(--vert-fonce); background: var(--vert-clair); padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 700; }
+  .tag-warn { color: #856404; background: #fff3cd; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 700; }
+  .tag-bad { color: #c0392b; background: #fde; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 700; }
+
+  /* ── SIGNATURE ── */
+  .sig-canvas {
+    width: 100%;
+    height: 160px;
+    border: 2px solid #e0ecd4;
+    border-radius: 12px;
+    background: var(--gris);
+    cursor: crosshair;
+    touch-action: none;
+    display: block;
+  }
+  .sig-canvas.signed { border-color: var(--vert); background: #fff; }
+  .sig-actions { display: flex; gap: 10px; margin-top: 10px; }
+  .sig-clear {
+    flex: 1;
+    padding: 11px;
+    border: 1.5px solid #ddd;
+    border-radius: 10px;
+    background: transparent;
+    color: #888;
+    font-family: 'Outfit', sans-serif;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  .sig-hint { font-size: 12px; color: #aaa; margin-top: 6px; text-align: center; }
+
+  /* ── BOTTOM ACTIONS ── */
+  .bottom-bar {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: var(--blanc);
+    padding: 14px 18px;
+    border-top: 1px solid #eee;
+    max-width: 480px;
+    margin: 0 auto;
+    display: flex;
+    gap: 10px;
+    z-index: 150;
+  }
+  .btn-main {
+    flex: 1;
+    padding: 15px;
+    background: var(--vert);
+    color: #fff;
+    border: none;
+    border-radius: 14px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-main:active { background: var(--vert-fonce); transform: scale(0.97); }
+  .btn-main:disabled { background: #ccc; }
+  .btn-back {
+    width: 52px;
+    background: var(--gris);
+    border: 1.5px solid #e0ecd4;
+    border-radius: 14px;
+    color: #666;
+    font-size: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* ── ALERT BANNER ── */
+  .alert-banner {
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 14px;
+    font-size: 13px;
+    font-weight: 500;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    line-height: 1.5;
+  }
+  .alert-warn { background: #fff8e1; border: 1px solid #ffc107; color: #7a5000; }
+  .alert-ok { background: #e8f7d5; border: 1px solid var(--vert); color: var(--vert-fonce); }
+  .alert-bad { background: #fde; border: 1px solid var(--rouge); color: #c0392b; }
+
+  /* ── SUCCESS SCREEN ── */
+  .success-wrap {
+    text-align: center;
+    padding: 40px 20px;
+  }
+  .success-icon { font-size: 64px; margin-bottom: 16px; }
+  .success-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 32px;
+    letter-spacing: 1px;
+    color: var(--vert);
+    margin-bottom: 8px;
+  }
+  .success-desc { font-size: 14px; color: #666; line-height: 1.7; }
+
+  /* ── PROGRESS BAR ── */
+  .progress-bar {
+    height: 4px;
+    background: #e0ecd4;
+    border-radius: 2px;
+    margin-bottom: 22px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--vert);
+    border-radius: 2px;
+    transition: width 0.4s ease;
+  }
+
+  /* ── PILL TABS ── */
+  .pill-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .pill-tabs::-webkit-scrollbar { display: none; }
+  .pill-tab {
+    padding: 7px 16px;
+    border-radius: 20px;
+    border: 1.5px solid #e0ecd4;
+    background: #fff;
+    font-size: 12px;
+    font-weight: 600;
+    color: #888;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s;
+  }
+  .pill-tab.active {
+    background: var(--vert);
+    border-color: var(--vert);
+    color: #fff;
+  }
+
+  /* ── COUNTER CHIP ── */
+  .count-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--vert);
+    color: #fff;
+    border-radius: 20px;
+    padding: 2px 10px;
+    font-size: 12px;
+    font-weight: 700;
+    margin-left: 6px;
+  }
+  .count-chip.warn { background: var(--orange); }
+  .count-chip.bad { background: var(--rouge); }
+
+  /* ── SECTION SEP ── */
+  .section-sep {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #bbb;
+    margin: 16px 0 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #eee;
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="app-header">
+  <div>
+    <div class="header-logo">PSE+</div>
+    <div class="header-sub">Application Terrain</div>
+  </div>
+  <div class="header-step" id="stepBadge">ACCUEIL</div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     ÉCRAN 0 — ACCUEIL
+════════════════════════════════════════════ -->
+<div class="screen active" id="screen-home">
+  <div style="padding-top: 10px; margin-bottom: 24px;">
+    <div style="font-size: 13px; color: #aaa;" id="dateDisplay"></div>
+    <div class="screen-title" style="margin-top: 4px;">Bonjour 👋</div>
+    <div class="screen-sub">Que voulez-vous faire aujourd'hui ?</div>
+  </div>
+
+  <div style="display: grid; gap: 12px;">
+    <div class="card" style="border-color: var(--vert); cursor: pointer; padding: 22px;" onclick="goTo('screen-event', 'SORTIE')">
+      <div style="font-size: 36px; margin-bottom: 10px;">📦</div>
+      <div style="font-family: 'Bebas Neue'; font-size: 22px; letter-spacing: 1px;">Sortie Matériel</div>
+      <div style="font-size: 13px; color: #777; margin-top: 4px;">Départ vers un événement · Checklist + signature client</div>
+    </div>
+
+    <div class="card" style="border-color: var(--bleu); cursor: pointer; padding: 22px;" onclick="goTo('screen-event', 'RETOUR')">
+      <div style="font-size: 36px; margin-bottom: 10px;">🔁</div>
+      <div style="font-family: 'Bebas Neue'; font-size: 22px; letter-spacing: 1px;">Retour Matériel</div>
+      <div style="font-size: 13px; color: #777; margin-top: 4px;">Contrôle au retour · Alerte si manquants</div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top: 12px; background: var(--noir); border-color: var(--noir);">
+    <div style="font-size: 12px; color: rgba(255,255,255,0.4); font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 10px;">📋 Dernières opérations</div>
+    <div id="historyList" style="font-size: 13px; color: rgba(255,255,255,0.55);">Aucune opération enregistrée</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     ÉCRAN 1 — INFOS ÉVÉNEMENT
+════════════════════════════════════════════ -->
+<div class="screen" id="screen-event">
+  <div class="progress-bar"><div class="progress-fill" style="width:25%"></div></div>
+  <div class="screen-title" id="eventTitle">INFORMATIONS ÉVÉNEMENT</div>
+  <div class="screen-sub">Renseignez les détails de la prestation</div>
+
+  <div class="card">
+    <div class="field">
+      <label>Nom de l'événement *</label>
+      <input type="text" id="evtNom" placeholder="Ex: Mariage Dupont, Anniversaire Martin...">
+    </div>
+    <div class="field">
+      <label>Nom de l'employé *</label>
+      <input type="text" id="evtEmploye" placeholder="Votre nom et prénom">
+    </div>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+      <div class="field">
+        <label>Date</label>
+        <input type="date" id="evtDate">
+      </div>
+      <div class="field">
+        <label>Heure</label>
+        <input type="time" id="evtHeure">
+      </div>
+    </div>
+    <div class="field">
+      <label>Lieu</label>
+      <input type="text" id="evtLieu" placeholder="Commune, salle...">
+    </div>
+    <div class="field">
+      <label>Nom du client</label>
+      <input type="text" id="evtClient" placeholder="Nom du responsable sur place">
+    </div>
+  </div>
+
+  <div class="bottom-bar">
+    <button class="btn-back" onclick="goTo('screen-home', 'ACCUEIL')">←</button>
+    <button class="btn-main" onclick="validateEvent()">SUIVANT →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     ÉCRAN 2 — CHECKLIST SORTIE
+════════════════════════════════════════════ -->
+<div class="screen" id="screen-sortie">
+  <div class="progress-bar"><div class="progress-fill" style="width:50%"></div></div>
+  <div class="screen-title">SORTIE MATÉRIEL</div>
+  <div class="screen-sub">Cochez et renseignez les quantités · Ajoutez les surplus</div>
+
+  <!-- PILL TABS -->
+  <div class="pill-tabs">
+    <div class="pill-tab active" onclick="filterCat('all', this)">Tout</div>
+    <div class="pill-tab" onclick="filterCat('mobilier', this)">🪑 Mobilier</div>
+    <div class="pill-tab" onclick="filterCat('structure', this)">⛺ Structure</div>
+    <div class="pill-tab" onclick="filterCat('vaisselle', this)">🍽 Vaisselle</div>
+    <div class="pill-tab" onclick="filterCat('surplus', this)">⚡ Surplus</div>
+  </div>
+
+  <div class="card" id="sortieList">
+    <!-- Articles générés dynamiquement -->
+  </div>
+
+  <button class="add-article-btn" onclick="openModal()">
+    <span style="font-size: 20px;">+</span> Ajouter un article / surplus
+  </button>
+
+  <div class="bottom-bar">
+    <button class="btn-back" onclick="goTo('screen-event', 'ÉVÉNEMENT')">←</button>
+    <button class="btn-main" onclick="validateSortie()">SIGNATURE →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     ÉCRAN 3 — SIGNATURE CLIENT
+════════════════════════════════════════════ -->
+<div class="screen" id="screen-signature">
+  <div class="progress-bar"><div class="progress-fill" style="width:75%"></div></div>
+  <div class="screen-title">SIGNATURE CLIENT</div>
+  <div class="screen-sub">Le client confirme la réception du matériel</div>
+
+  <div class="card">
+    <div class="card-title">📋 Récapitulatif sortie</div>
+    <div id="sigRecap" style="margin-bottom: 16px; font-size: 13px; color: #555; line-height: 1.8;"></div>
+    <div style="font-size: 12px; font-weight: 600; color: #555; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">Signature du client ✍️</div>
+    <canvas class="sig-canvas" id="sigCanvas"></canvas>
+    <div class="sig-actions">
+      <button class="sig-clear" onclick="clearSignature()">✕ Effacer</button>
+    </div>
+    <div class="sig-hint">Faites signer le client dans le cadre ci-dessus</div>
+  </div>
+
+  <div class="card" style="border-color: var(--vert-clair);">
+    <div class="card-title">📝 Commentaire (optionnel)</div>
+    <textarea id="sigComment" placeholder="Remarques, état du matériel au départ, instructions particulières..."></textarea>
+  </div>
+
+  <div class="bottom-bar">
+    <button class="btn-back" onclick="goTo('screen-sortie', 'SORTIE')">←</button>
+    <button class="btn-main" id="btnEnvoiSortie" onclick="envoyerSortie()">ENVOYER SORTIE ✓</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     ÉCRAN 4 — RETOUR MATÉRIEL
+════════════════════════════════════════════ -->
+<div class="screen" id="screen-retour">
+  <div class="progress-bar"><div class="progress-fill" style="width:85%"></div></div>
+  <div class="screen-title">RETOUR MATÉRIEL</div>
+  <div class="screen-sub">Contrôlez chaque article. Modifiez la quantité réellement rendue.</div>
+
+  <div id="alertRetour" style="display:none;"></div>
+
+  <div class="card" id="retourList">
+    <!-- Généré dynamiquement depuis la sortie -->
+  </div>
+
+  <div class="card" style="border-color: #ffeeba; background: #fffdf0;">
+    <div class="card-title">📝 Observations retour</div>
+    <textarea id="retourComment" placeholder="Articles abîmés, manquants, remarques..."></textarea>
+  </div>
+
+  <div class="bottom-bar">
+    <button class="btn-back" onclick="goTo('screen-home', 'ACCUEIL')">←</button>
+    <button class="btn-main" onclick="envoyerRetour()">ENVOYER RETOUR ✓</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     ÉCRAN 5 — SUCCÈS
+════════════════════════════════════════════ -->
+<div class="screen" id="screen-success">
+  <div class="success-wrap">
+    <div class="success-icon" id="successIcon">✅</div>
+    <div class="success-title" id="successTitle">ENVOYÉ !</div>
+    <div class="success-desc" id="successDesc"></div>
+    <button class="btn-main" style="margin-top: 30px; max-width: 300px; display: block; margin-left: auto; margin-right: auto;" onclick="goTo('screen-home', 'ACCUEIL')">RETOUR ACCUEIL</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     MODAL — AJOUT ARTICLE
+════════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">⚡ AJOUTER UN ARTICLE</div>
+    <div class="modal-sub">Article prévu ou surplus de dernière minute</div>
+
+    <div class="modal-field">
+      <label>Nom de l'article *</label>
+      <input type="text" id="modalNom" placeholder="Ex: Parasols, rallonge électrique...">
+    </div>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+      <div class="modal-field">
+        <label>Quantité</label>
+        <input type="number" id="modalQty" placeholder="1" min="1" value="1">
+      </div>
+      <div class="modal-field">
+        <label>Catégorie</label>
+        <select id="modalCat">
+          <option value="surplus">⚡ Surplus</option>
+          <option value="mobilier">🪑 Mobilier</option>
+          <option value="structure">⛺ Structure</option>
+          <option value="vaisselle">🍽 Vaisselle</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-field">
+      <label>Prix unitaire (€) — optionnel</label>
+      <input type="number" id="modalPrix" placeholder="0" min="0" step="0.01">
+    </div>
+    <button class="modal-confirm" onclick="addCustomArticle()">AJOUTER CET ARTICLE</button>
+    <button class="modal-cancel" onclick="closeModal()">Annuler</button>
+  </div>
+</div>
+
+<script>
+// ═══════════ CONFIGURATION ═══════════
+const FORMSPREE_ID = 'xzdoyalo';
+const FORMSPREE_URL = `https://formspree.io/f/${FORMSPREE_ID}`;
+
+// ═══════════ CATALOGUE ARTICLES ═══════════
+const CATALOGUE = [
+  { id: 'chaises',     nom: 'Chaises',                  prix: 1.20,  cat: 'mobilier',  emoji: '🪑' },
+  { id: 'tables',      nom: 'Tables',                   prix: 10,    cat: 'mobilier',  emoji: '🪵' },
+  { id: 'mangedebout', nom: 'Mange-debout',             prix: 10,    cat: 'mobilier',  emoji: '🧍' },
+  { id: 'salon',       nom: 'Salon (4 fauteuils+table)',prix: 45,    cat: 'mobilier',  emoji: '🛋' },
+  { id: 'nappes',      nom: 'Nappes',                   prix: 15,    cat: 'mobilier',  emoji: '🧼' },
+  { id: 'tentes',      nom: 'Tentes',                   prix: 150,   cat: 'structure', emoji: '⛺' },
+  { id: 'plancher',    nom: 'Plancher (m²)',             prix: 12,    cat: 'structure', emoji: '🪵' },
+  { id: 'fourchettes', nom: 'Fourchettes',              prix: 0.45,  cat: 'vaisselle', emoji: '🍴' },
+  { id: 'couteaux',    nom: 'Couteaux',                 prix: 0.45,  cat: 'vaisselle', emoji: '🔪' },
+  { id: 'ptcuillere',  nom: 'Petites cuillères',        prix: 0.45,  cat: 'vaisselle', emoji: '🥄' },
+  { id: 'gdcuillere',  nom: 'Grandes cuillères',        prix: 0.45,  cat: 'vaisselle', emoji: '🥄' },
+  { id: 'verreau',     nom: 'Verres à eau',             prix: 0.45,  cat: 'vaisselle', emoji: '🥛' },
+  { id: 'verrvin',     nom: 'Verres à vin',             prix: 0.45,  cat: 'vaisselle', emoji: '🍷' },
+  { id: 'verrchamp',   nom: 'Verres à champagne',       prix: 0.45,  cat: 'vaisselle', emoji: '🥂' },
+  { id: 'seau',        nom: 'Seaux à champagne',        prix: 1,     cat: 'vaisselle', emoji: '🍾' },
+];
+
+// ═══════════ STATE ═══════════
+let currentMode = 'SORTIE'; // 'SORTIE' | 'RETOUR'
+let eventInfo = {};
+let articles = []; // [{...catalogue, qty: N, checked: bool, isSurplus: bool}]
+let signatureData = null;
+let history = JSON.parse(localStorage.getItem('pse_history') || '[]');
+
+// ═══════════ INIT ═══════════
+document.addEventListener('DOMContentLoaded', () => {
+  const now = new Date();
+  document.getElementById('dateDisplay').textContent =
+    now.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  document.getElementById('evtDate').value = now.toISOString().split('T')[0];
+  document.getElementById('evtHeure').value =
+    now.toTimeString().slice(0,5);
+  renderHistory();
+  initSignature();
+});
+
+// ═══════════ NAVIGATION ═══════════
+function goTo(screenId, label) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(screenId).classList.add('active');
+  document.getElementById('stepBadge').textContent = label;
+  window.scrollTo(0, 0);
+}
+
+// ═══════════ SCREEN 0 → 1 ═══════════
+function startFlow(mode) {
+  currentMode = mode;
+  document.getElementById('eventTitle').textContent =
+    mode === 'SORTIE' ? '📦 SORTIE — INFOS ÉVÉNEMENT' : '🔁 RETOUR — INFOS ÉVÉNEMENT';
+  goTo('screen-event', 'ÉVÉNEMENT');
+}
+
+// ═══════════ SCREEN 1 → 2 ═══════════
+function validateEvent() {
+  const nom = document.getElementById('evtNom').value.trim();
+  const employe = document.getElementById('evtEmploye').value.trim();
+  if (!nom || !employe) {
+    alert('Merci de renseigner le nom de l\'événement et votre nom.');
+    return;
+  }
+  eventInfo = {
+    nom, employe,
+    date: document.getElementById('evtDate').value,
+    heure: document.getElementById('evtHeure').value,
+    lieu: document.getElementById('evtLieu').value,
+    client: document.getElementById('evtClient').value,
+  };
+
+  if (currentMode === 'SORTIE') {
+    initArticles();
+    renderSortie();
+    goTo('screen-sortie', 'SORTIE');
+  } else {
+    initRetour();
+    goTo('screen-retour', 'RETOUR');
+  }
+}
+
+// ═══════════ ARTICLES INIT ═══════════
+function initArticles() {
+  articles = CATALOGUE.map(a => ({ ...a, qty: 0, checked: false, isSurplus: false }));
+}
+
+// ═══════════ RENDER SORTIE ═══════════
+function renderSortie(filterCat = 'all') {
+  const list = document.getElementById('sortieList');
+  const visible = filterCat === 'all' ? articles :
+    filterCat === 'surplus' ? articles.filter(a => a.isSurplus) :
+    articles.filter(a => a.cat === filterCat);
+
+  if (visible.length === 0) {
+    list.innerHTML = '<div style="text-align:center;padding:20px;color:#aaa;font-size:13px;">Aucun article dans cette catégorie</div>';
+    return;
+  }
+
+  // Group by cat if all
+  let html = '';
+  if (filterCat === 'all') {
+    const cats = [
+      { key: 'mobilier', label: '🪑 Mobilier' },
+      { key: 'structure', label: '⛺ Structure' },
+      { key: 'vaisselle', label: '🍽 Vaisselle' },
+      { key: 'surplus', label: '⚡ Surplus / Dernière minute' },
+    ];
+    cats.forEach(cat => {
+      const items = cat.key === 'surplus'
+        ? articles.filter(a => a.isSurplus)
+        : articles.filter(a => a.cat === cat.key && !a.isSurplus);
+      if (items.length === 0) return;
+      html += `<div class="section-sep">${cat.label}</div>`;
+      items.forEach(a => { html += renderArticleRow(a); });
+    });
+  } else {
+    visible.forEach(a => { html += renderArticleRow(a); });
+  }
+  list.innerHTML = html;
+}
+
+function renderArticleRow(a) {
+  const priceLabel = a.prix ? `${a.prix.toFixed(2).replace('.',',')} €` : '';
+  const surplusBadge = a.isSurplus ? '<span class="surplus-badge">SURPLUS</span>' : '';
+  const deleteBtn = a.isSurplus
+    ? `<button class="article-delete" onclick="removeArticle('${a.id}')">🗑</button>`
+    : '';
+  return `
+    <div class="article-row" id="row_${a.id}">
+      <div class="article-check ${a.checked ? 'checked' : ''}" onclick="toggleCheck('${a.id}')">
+        ${a.checked ? '✓' : ''}
+      </div>
+      <div class="article-info">
+        <div class="article-name">${a.emoji || ''} ${a.nom}${surplusBadge}</div>
+        <div class="article-price">${priceLabel}</div>
+      </div>
+      <div class="article-qty-wrap">
+        <button class="qty-btn" onclick="changeQty('${a.id}', -1)">−</button>
+        <div class="qty-display" id="qty_${a.id}">${a.qty}</div>
+        <button class="qty-btn" onclick="changeQty('${a.id}', 1)">+</button>
+      </div>
+      ${deleteBtn}
+    </div>`;
+}
+
+// ═══════════ ACTIONS ARTICLES ═══════════
+function toggleCheck(id) {
+  const a = articles.find(x => x.id === id);
+  a.checked = !a.checked;
+  if (a.checked && a.qty === 0) { a.qty = 1; }
+  if (!a.checked) { a.qty = 0; }
+  refreshRow(a);
+}
+
+function changeQty(id, delta) {
+  const a = articles.find(x => x.id === id);
+  a.qty = Math.max(0, a.qty + delta);
+  a.checked = a.qty > 0;
+  refreshRow(a);
+}
+
+function refreshRow(a) {
+  const row = document.getElementById(`row_${a.id}`);
+  if (!row) return;
+  const check = row.querySelector('.article-check');
+  const qty = row.querySelector(`#qty_${a.id}`);
+  if (check) {
+    check.className = `article-check ${a.checked ? 'checked' : ''}`;
+    check.textContent = a.checked ? '✓' : '';
+  }
+  if (qty) qty.textContent = a.qty;
+}
+
+function removeArticle(id) {
+  articles = articles.filter(a => a.id !== id);
+  renderSortie(currentFilter);
+}
+
+let currentFilter = 'all';
+function filterCat(cat, el) {
+  currentFilter = cat;
+  document.querySelectorAll('.pill-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  renderSortie(cat);
+}
+
+// ═══════════ MODAL ADD ARTICLE ═══════════
+function openModal() {
+  document.getElementById('modal').classList.add('open');
+  document.getElementById('modalNom').focus();
+}
+function closeModal() {
+  document.getElementById('modal').classList.remove('open');
+  document.getElementById('modalNom').value = '';
+  document.getElementById('modalQty').value = 1;
+  document.getElementById('modalPrix').value = '';
+}
+function addCustomArticle() {
+  const nom = document.getElementById('modalNom').value.trim();
+  if (!nom) { alert('Merci de donner un nom à cet article.'); return; }
+  const qty = parseInt(document.getElementById('modalQty').value) || 1;
+  const prix = parseFloat(document.getElementById('modalPrix').value) || 0;
+  const cat = document.getElementById('modalCat').value;
+  const id = 'custom_' + Date.now();
+  articles.push({
+    id, nom, prix, cat,
+    emoji: cat === 'surplus' ? '⚡' : cat === 'mobilier' ? '🪑' : cat === 'structure' ? '⛺' : '🍽',
+    qty, checked: true, isSurplus: true
+  });
+  closeModal();
+  currentFilter = 'all';
+  document.querySelectorAll('.pill-tab').forEach((t,i) => t.classList.toggle('active', i===0));
+  renderSortie('all');
+}
+
+// ═══════════ VALIDATE SORTIE ═══════════
+function validateSortie() {
+  const checked = articles.filter(a => a.checked && a.qty > 0);
+  if (checked.length === 0) {
+    alert('Cochez au moins un article avant de continuer.');
+    return;
+  }
+  // Build signature recap
+  let recap = `<strong>${eventInfo.nom}</strong><br>${eventInfo.date} · ${eventInfo.heure}<br>${eventInfo.lieu || ''}<br><br>`;
+  recap += checked.map(a => `• ${a.emoji || ''} ${a.nom} : <strong>${a.qty}</strong>${a.isSurplus ? ' <span class="surplus-badge">SURPLUS</span>' : ''}`).join('<br>');
+  document.getElementById('sigRecap').innerHTML = recap;
+  goTo('screen-signature', 'SIGNATURE');
+}
+
+// ═══════════ SIGNATURE CANVAS ═══════════
+let sigCtx, sigDrawing = false, sigHasData = false;
+function initSignature() {
+  const canvas = document.getElementById('sigCanvas');
+  const ratio = window.devicePixelRatio || 1;
+  canvas.width = canvas.offsetWidth * ratio;
+  canvas.height = canvas.offsetHeight * ratio;
+  sigCtx = canvas.getContext('2d');
+  sigCtx.scale(ratio, ratio);
+  sigCtx.strokeStyle = '#0f1a00';
+  sigCtx.lineWidth = 2.5;
+  sigCtx.lineCap = 'round';
+  sigCtx.lineJoin = 'round';
+
+  const getPos = (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const touch = e.touches ? e.touches[0] : e;
+    return { x: touch.clientX - rect.left, y: touch.clientY - rect.top };
+  };
+  const start = (e) => { e.preventDefault(); sigDrawing = true; const p = getPos(e); sigCtx.beginPath(); sigCtx.moveTo(p.x, p.y); };
+  const move = (e) => { e.preventDefault(); if (!sigDrawing) return; const p = getPos(e); sigCtx.lineTo(p.x, p.y); sigCtx.stroke(); sigHasData = true; canvas.classList.add('signed'); };
+  const end = () => { sigDrawing = false; };
+  canvas.addEventListener('mousedown', start);
+  canvas.addEventListener('mousemove', move);
+  canvas.addEventListener('mouseup', end);
+  canvas.addEventListener('touchstart', start, { passive: false });
+  canvas.addEventListener('touchmove', move, { passive: false });
+  canvas.addEventListener('touchend', end);
+}
+function clearSignature() {
+  const canvas = document.getElementById('sigCanvas');
+  sigCtx.clearRect(0, 0, canvas.width, canvas.height);
+  sigHasData = false;
+  canvas.classList.remove('signed');
+}
+
+// ═══════════ ENVOYER SORTIE ═══════════
+async function envoyerSortie() {
+  const btn = document.getElementById('btnEnvoiSortie');
+  btn.textContent = 'Envoi...'; btn.disabled = true;
+
+  const checked = articles.filter(a => a.checked && a.qty > 0);
+  const canvas = document.getElementById('sigCanvas');
+  signatureData = sigHasData ? canvas.toDataURL('image/png') : null;
+
+  const lines = checked.map(a =>
+    `${a.emoji || ''} ${a.nom}${a.isSurplus ? ' [SURPLUS]' : ''} : ${a.qty} ${a.prix ? '(' + a.qty * a.prix + '€)' : ''}`
+  ).join('\n');
+
+  const totalEst = checked.reduce((s, a) => s + a.qty * (a.prix || 0), 0);
+  const surplus = checked.filter(a => a.isSurplus);
+
+  const payload = {
+    _subject: `[PSE+ SORTIE] ${eventInfo.nom} — ${eventInfo.date}`,
+    type: 'FICHE DE SORTIE',
+    evenement: eventInfo.nom,
+    employe: eventInfo.employe,
+    date: eventInfo.date,
+    heure: eventInfo.heure,
+    lieu: eventInfo.lieu || '-',
+    client_sur_place: eventInfo.client || '-',
+    articles_sortis: lines,
+    nb_articles: checked.length,
+    total_estimatif: totalEst.toFixed(2) + ' €',
+    surplus: surplus.length > 0 ? surplus.map(a => `${a.nom} x${a.qty}`).join(', ') : 'Aucun',
+    signature_client: signatureData ? 'OUI (signature électronique recueillie)' : 'NON',
+    commentaire: document.getElementById('sigComment').value || '-',
+  };
+
+  // Save to local storage
+  saveToHistory('SORTIE', payload);
+
+  try {
+    const res = await fetch(FORMSPREE_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (res.ok) {
+      showSuccess('SORTIE', eventInfo.nom, checked, surplus.length);
+    } else { throw new Error(); }
+  } catch {
+    // Fallback mailto
+    const body = Object.entries(payload).map(([k,v]) => `${k}: ${v}`).join('\n');
+    window.location.href = `mailto:Thierryarthur971@gmail.com?subject=${encodeURIComponent(payload._subject)}&body=${encodeURIComponent(body)}`;
+    showSuccess('SORTIE', eventInfo.nom, checked, surplus.length);
+  }
+  btn.textContent = 'ENVOYER SORTIE ✓'; btn.disabled = false;
+}
+
+// ═══════════ RETOUR ═══════════
+function initRetour() {
+  // Try to get last sortie from history
+  const lastSortie = history.find(h => h.type === 'SORTIE' && h.evenement === eventInfo.nom);
+  const list = document.getElementById('retourList');
+
+  if (lastSortie && lastSortie.articlesData) {
+    articles = lastSortie.articlesData.map(a => ({ ...a, qtyRetour: a.qty }));
+  } else {
+    // Use full catalogue with 0
+    articles = CATALOGUE.map(a => ({ ...a, qty: 0, checked: true, isSurplus: false, qtyRetour: 0 }));
+    document.getElementById('alertRetour').style.display = 'block';
+    document.getElementById('alertRetour').innerHTML =
+      `<div class="alert-banner alert-warn">⚠️ Aucune fiche de sortie trouvée pour cet événement. Saisissez manuellement les quantités retournées.</div>`;
+  }
+  renderRetour();
+}
+
+function renderRetour() {
+  const list = document.getElementById('retourList');
+  const active = articles.filter(a => a.qty > 0 || a.qtyRetour > 0);
+  if (active.length === 0) {
+    // show all catalogue
+    articles.forEach(a => a.qty = 0);
+  }
+  const toShow = articles.filter(a => a.qty > 0);
+
+  if (toShow.length === 0) {
+    list.innerHTML = `<div style="font-size:13px;color:#aaa;text-align:center;padding:20px;">Saisissez les quantités retournées ci-dessous</div>` +
+      CATALOGUE.map(a => renderRetourRow(a)).join('');
+    return;
+  }
+  list.innerHTML = `<div class="card-title">📦 Articles sortis → Quantité retournée</div>` +
+    toShow.map(a => renderRetourRow(a)).join('');
+}
+
+function renderRetourRow(a) {
+  const diff = (a.qtyRetour || 0) - (a.qty || 0);
+  const statusIcon = diff === 0 ? '✅' : diff < 0 ? '⚠️' : '➕';
+  const statusClass = diff === 0 ? 'status-ok' : diff < 0 ? 'status-bad' : 'status-warn';
+  return `
+    <div class="retour-row">
+      <div class="retour-name">${a.emoji || ''} ${a.nom}</div>
+      ${a.qty > 0 ? `<div class="retour-sortie">Sorti: ${a.qty}</div>` : ''}
+      <div class="retour-qty-wrap">
+        <button class="qty-btn" onclick="changeRetourQty('${a.id}', -1)">−</button>
+        <div class="qty-display" id="retqty_${a.id}">${a.qtyRetour || 0}</div>
+        <button class="qty-btn" onclick="changeRetourQty('${a.id}', 1)">+</button>
+      </div>
+      <div class="retour-status ${statusClass}" id="retstatus_${a.id}">${statusIcon}</div>
+    </div>`;
+}
+
+function changeRetourQty(id, delta) {
+  const a = articles.find(x => x.id === id);
+  if (!a) return;
+  a.qtyRetour = Math.max(0, (a.qtyRetour || 0) + delta);
+  const el = document.getElementById(`retqty_${id}`);
+  const st = document.getElementById(`retstatus_${id}`);
+  if (el) el.textContent = a.qtyRetour;
+  if (st) {
+    const diff = a.qtyRetour - (a.qty || 0);
+    st.textContent = diff === 0 ? '✅' : diff < 0 ? '⚠️' : '➕';
+    st.className = `retour-status ${diff === 0 ? 'status-ok' : diff < 0 ? 'status-bad' : 'status-warn'}`;
+  }
+}
+
+// ═══════════ ENVOYER RETOUR ═══════════
+async function envoyerRetour() {
+  const actives = articles.filter(a => a.qty > 0 || a.qtyRetour > 0);
+  const manquants = actives.filter(a => (a.qtyRetour || 0) < (a.qty || 0));
+  const surplus = actives.filter(a => (a.qtyRetour || 0) > (a.qty || 0));
+
+  let lines = actives.map(a => {
+    const diff = (a.qtyRetour || 0) - (a.qty || 0);
+    const status = diff === 0 ? '✅' : diff < 0 ? `⚠️ MANQUE ${Math.abs(diff)}` : `➕ SURPLUS ${diff}`;
+    return `${a.emoji || ''} ${a.nom} : sorti ${a.qty} → rendu ${a.qtyRetour || 0} ${status}`;
+  }).join('\n');
+
+  const payload = {
+    _subject: `[PSE+ RETOUR${manquants.length > 0 ? ' ⚠️ ÉCART' : ''}] ${eventInfo.nom} — ${eventInfo.date}`,
+    type: 'FICHE DE RETOUR',
+    evenement: eventInfo.nom,
+    employe: eventInfo.employe,
+    date_retour: new Date().toLocaleDateString('fr-FR'),
+    heure_retour: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
+    bilan: lines,
+    articles_manquants: manquants.length > 0
+      ? manquants.map(a => `${a.nom}: manque ${(a.qty || 0) - (a.qtyRetour || 0)}`).join(', ')
+      : 'AUCUN MANQUANT ✅',
+    articles_surplus: surplus.length > 0
+      ? surplus.map(a => `${a.nom}: +${(a.qtyRetour || 0) - (a.qty || 0)}`).join(', ')
+      : 'Aucun',
+    commentaire_retour: document.getElementById('retourComment').value || '-',
+    alerte: manquants.length > 0 ? `🚨 ${manquants.length} article(s) manquant(s) — vérification nécessaire` : 'RAS',
+  };
+
+  saveToHistory('RETOUR', payload);
+
+  try {
+    const res = await fetch(FORMSPREE_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (res.ok) {
+      showRetourSuccess(manquants, actives);
+    } else throw new Error();
+  } catch {
+    const body = Object.entries(payload).map(([k,v]) => `${k}: ${v}`).join('\n');
+    window.location.href = `mailto:Thierryarthur971@gmail.com?subject=${encodeURIComponent(payload._subject)}&body=${encodeURIComponent(body)}`;
+    showRetourSuccess(manquants, actives);
+  }
+}
+
+function showRetourSuccess(manquants, actives) {
+  if (manquants.length > 0) {
+    document.getElementById('successIcon').textContent = '⚠️';
+    document.getElementById('successTitle').textContent = 'RETOUR ENVOYÉ';
+    document.getElementById('successTitle').style.color = '#f39c12';
+    document.getElementById('successDesc').innerHTML =
+      `Fiche de retour transmise à Thierry.<br><br>
+       <strong style="color:#e74c3c;">🚨 ${manquants.length} article(s) manquant(s) détecté(s) :</strong><br>
+       ${manquants.map(a => `• ${a.nom} : ${(a.qty||0) - (a.qtyRetour||0)} manquant(s)`).join('<br>')}
+       <br><br>Thierry a reçu une alerte automatique.`;
+  } else {
+    document.getElementById('successIcon').textContent = '✅';
+    document.getElementById('successTitle').textContent = 'RETOUR OK !';
+    document.getElementById('successTitle').style.color = 'var(--vert)';
+    document.getElementById('successDesc').innerHTML =
+      `Tous les articles sont rentrés.<br>Fiche de retour transmise à Thierry.<br><br>
+       <strong>${actives.length} article(s)</strong> contrôlé(s) — aucun manquant.`;
+  }
+  goTo('screen-success', 'TERMINÉ');
+}
+
+function showSuccess(type, nom, checked, nbSurplus) {
+  document.getElementById('successIcon').textContent = '✅';
+  document.getElementById('successTitle').textContent = 'FICHE ENVOYÉE !';
+  document.getElementById('successTitle').style.color = 'var(--vert)';
+  document.getElementById('successDesc').innerHTML =
+    `Fiche de sortie transmise à Thierry.<br><br>
+     <strong>${checked.length} article(s)</strong> enregistré(s)
+     ${nbSurplus > 0 ? `dont <strong>${nbSurplus} surplus</strong> de dernière minute` : ''}<br>
+     Événement : <strong>${nom}</strong>`;
+  goTo('screen-success', 'TERMINÉ');
+}
+
+// ═══════════ HISTORY ═══════════
+function saveToHistory(type, data) {
+  const entry = {
+    type,
+    evenement: data.evenement || eventInfo.nom,
+    date: data.date || new Date().toLocaleDateString('fr-FR'),
+    employe: data.employe || eventInfo.employe,
+    ts: Date.now(),
+    articlesData: type === 'SORTIE' ? articles.filter(a => a.checked && a.qty > 0) : null,
+  };
+  history.unshift(entry);
+  if (history.length > 10) history = history.slice(0, 10);
+  try { localStorage.setItem('pse_history', JSON.stringify(history)); } catch(e) {}
+  renderHistory();
+}
+
+function renderHistory() {
+  const el = document.getElementById('historyList');
+  if (history.length === 0) {
+    el.textContent = 'Aucune opération enregistrée';
+    return;
+  }
+  el.innerHTML = history.slice(0, 4).map(h => {
+    const icon = h.type === 'SORTIE' ? '📦' : '🔁';
+    const color = h.type === 'SORTIE' ? 'var(--vert)' : '#3498db';
+    return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+      <span style="font-size:16px;">${icon}</span>
+      <div>
+        <div style="color:#fff;font-size:13px;font-weight:600;">${h.evenement}</div>
+        <div style="color:rgba(255,255,255,0.4);font-size:11px;">${h.type} · ${h.date} · ${h.employe}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// Handle goTo from home screen onclick
+document.querySelectorAll('[onclick^="goTo(\'screen-event\'"]').forEach(el => {
+  const mode = el.getAttribute('onclick').includes('SORTIE') ? 'SORTIE' : 'RETOUR';
+  el.onclick = () => startFlow(mode);
+});
+</script>
+</body>
+</html>
