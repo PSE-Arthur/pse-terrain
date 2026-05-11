@@ -719,7 +719,32 @@
 
     <div class="modal-field">
       <label>Nom de l'article *</label>
-      <input type="text" id="modalNom" placeholder="Ex: Parasols, rallonge électrique...">
+      <input type="text" id="modalNom" placeholder="Tapez pour chercher un article..." list="articlesList" autocomplete="off">
+      <datalist id="articlesList">
+        <option value="Chaises">
+        <option value="Tables">
+        <option value="Mange-debout">
+        <option value="Salon (4 fauteuils + table basse)">
+        <option value="Nappes">
+        <option value="Tentes">
+        <option value="Plancher (m²)">
+        <option value="Fourchettes">
+        <option value="Couteaux">
+        <option value="Petites cuillères">
+        <option value="Grandes cuillères">
+        <option value="Verres à eau">
+        <option value="Verres à vin">
+        <option value="Verres à champagne">
+        <option value="Seaux à champagne">
+        <option value="Parasols">
+        <option value="Rallonge électrique">
+        <option value="Guirlandes lumineuses">
+        <option value="Scène / Podium">
+        <option value="Sono / Enceintes">
+        <option value="Barrières">
+        <option value="Poubelles">
+        <option value="Glacières">
+      </datalist>
     </div>
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
       <div class="modal-field">
@@ -871,7 +896,6 @@ function renderSortie(filterCat = 'all') {
 }
 
 function renderArticleRow(a) {
-  const priceLabel = a.prix ? `${a.prix.toFixed(2).replace('.',',')} €` : '';
   const surplusBadge = a.isSurplus ? '<span class="surplus-badge">SURPLUS</span>' : '';
   const deleteBtn = a.isSurplus
     ? `<button class="article-delete" onclick="removeArticle('${a.id}')">🗑</button>`
@@ -883,7 +907,6 @@ function renderArticleRow(a) {
       </div>
       <div class="article-info">
         <div class="article-name">${a.emoji || ''} ${a.nom}${surplusBadge}</div>
-        <div class="article-price">${priceLabel}</div>
       </div>
       <div class="article-qty-wrap">
         <button class="qty-btn" onclick="changeQty('${a.id}', -1)">−</button>
