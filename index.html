@@ -165,12 +165,21 @@
   }
   .qty-btn:active { background: var(--vert); color: #fff; transform: scale(0.92); }
   .qty-display {
-    width: 42px;
+    width: 56px;
     text-align: center;
     font-size: 16px;
     font-weight: 700;
     color: var(--noir);
+    border: 1.5px solid #d0e8b0;
+    border-radius: 8px;
+    background: var(--gris);
+    padding: 5px 2px;
+    outline: none;
+    -moz-appearance: textfield;
+    font-family: 'Outfit', sans-serif;
   }
+  .qty-display:focus { border-color: var(--vert); background: #fff; }
+  .qty-display::-webkit-inner-spin-button, .qty-display::-webkit-outer-spin-button { -webkit-appearance: none; }
   .article-delete {
     width: 28px; height: 28px;
     border: none;
@@ -878,7 +887,7 @@ function renderArticleRow(a) {
       </div>
       <div class="article-qty-wrap">
         <button class="qty-btn" onclick="changeQty('${a.id}', -1)">−</button>
-        <div class="qty-display" id="qty_${a.id}">${a.qty}</div>
+        <input type="number" class="qty-display" id="qty_${a.id}" value="${a.qty}" min="0" inputmode="numeric" pattern="[0-9]*" onchange="setQty('${a.id}', this.value)" onfocus="this.select()">
         <button class="qty-btn" onclick="changeQty('${a.id}', 1)">+</button>
       </div>
       ${deleteBtn}
@@ -894,6 +903,24 @@ function toggleCheck(id) {
   refreshRow(a);
 }
 
+function setQty(id, val) {
+  const a = articles.find(x => x.id === id);
+  if (!a) return;
+  a.qty = Math.max(0, parseInt(val) || 0);
+  a.checked = a.qty > 0;
+  refreshRow(a);
+}
+function setRetourQty(id, val) {
+  const a = articles.find(x => x.id === id);
+  if (!a) return;
+  a.qtyRetour = Math.max(0, parseInt(val) || 0);
+  const st = document.getElementById('retstatus_' + id);
+  if (st) {
+    const diff = a.qtyRetour - (a.qty || 0);
+    st.textContent = diff === 0 ? '✅' : diff < 0 ? '⚠️' : '➕';
+    st.className = 'retour-status ' + (diff === 0 ? 'status-ok' : diff < 0 ? 'status-bad' : 'status-warn');
+  }
+}
 function changeQty(id, delta) {
   const a = articles.find(x => x.id === id);
   a.qty = Math.max(0, a.qty + delta);
@@ -910,7 +937,7 @@ function refreshRow(a) {
     check.className = `article-check ${a.checked ? 'checked' : ''}`;
     check.textContent = a.checked ? '✓' : '';
   }
-  if (qty) qty.textContent = a.qty;
+  if (qty) { if (qty.tagName === "INPUT") qty.value = a.qty; else qty.textContent = a.qty; }
 }
 
 function removeArticle(id) {
@@ -1105,7 +1132,7 @@ function renderRetourRow(a) {
       ${a.qty > 0 ? `<div class="retour-sortie">Sorti: ${a.qty}</div>` : ''}
       <div class="retour-qty-wrap">
         <button class="qty-btn" onclick="changeRetourQty('${a.id}', -1)">−</button>
-        <div class="qty-display" id="retqty_${a.id}">${a.qtyRetour || 0}</div>
+        <input type="number" class="qty-display" id="retqty_${a.id}" value="${a.qtyRetour || 0}" min="0" inputmode="numeric" onchange="setRetourQty(''+a.id+'', this.value)" onfocus="this.select()">
         <button class="qty-btn" onclick="changeRetourQty('${a.id}', 1)">+</button>
       </div>
       <div class="retour-status ${statusClass}" id="retstatus_${a.id}">${statusIcon}</div>
@@ -1118,7 +1145,7 @@ function changeRetourQty(id, delta) {
   a.qtyRetour = Math.max(0, (a.qtyRetour || 0) + delta);
   const el = document.getElementById(`retqty_${id}`);
   const st = document.getElementById(`retstatus_${id}`);
-  if (el) el.textContent = a.qtyRetour;
+  if (el) { if (el.tagName === "INPUT") el.value = a.qtyRetour; else el.textContent = a.qtyRetour; }
   if (st) {
     const diff = a.qtyRetour - (a.qty || 0);
     st.textContent = diff === 0 ? '✅' : diff < 0 ? '⚠️' : '➕';
