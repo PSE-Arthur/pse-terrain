@@ -810,7 +810,6 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('evtHeure').value =
     now.toTimeString().slice(0,5);
   renderHistory();
-  initSignature();
 });
 
 // ═══════════ NAVIGATION ═══════════
@@ -819,6 +818,9 @@ function goTo(screenId, label) {
   document.getElementById(screenId).classList.add('active');
   document.getElementById('stepBadge').textContent = label;
   window.scrollTo(0, 0);
+  if (screenId === 'screen-signature') {
+    setTimeout(initSignature, 80);
+  }
 }
 
 // ═══════════ SCREEN 0 → 1 ═══════════
@@ -1020,19 +1022,27 @@ function validateSortie() {
 }
 
 // ═══════════ SIGNATURE CANVAS ═══════════
-let sigCtx, sigDrawing = false, sigHasData = false;
+let sigCtx, sigDrawing = false, sigHasData = false, sigInited = false;
 function initSignature() {
   const canvas = document.getElementById('sigCanvas');
+  if (!canvas) return;
+  // Always resize to actual visible size
   const ratio = window.devicePixelRatio || 1;
-  canvas.width = canvas.offsetWidth * ratio;
-  canvas.height = canvas.offsetHeight * ratio;
+  const w = canvas.offsetWidth;
+  const h = canvas.offsetHeight;
+  if (w === 0) { setTimeout(initSignature, 100); return; }
+  canvas.width = w * ratio;
+  canvas.height = h * ratio;
   sigCtx = canvas.getContext('2d');
   sigCtx.scale(ratio, ratio);
   sigCtx.strokeStyle = '#0f1a00';
-  sigCtx.lineWidth = 2.5;
+  sigCtx.lineWidth = 3;
   sigCtx.lineCap = 'round';
   sigCtx.lineJoin = 'round';
-
+  sigHasData = false;
+  canvas.classList.remove('signed');
+  if (sigInited) return; // events already bound
+  sigInited = true;
   const getPos = (e) => {
     const rect = canvas.getBoundingClientRect();
     const touch = e.touches ? e.touches[0] : e;
@@ -1044,9 +1054,11 @@ function initSignature() {
   canvas.addEventListener('mousedown', start);
   canvas.addEventListener('mousemove', move);
   canvas.addEventListener('mouseup', end);
+  canvas.addEventListener('mouseleave', end);
   canvas.addEventListener('touchstart', start, { passive: false });
   canvas.addEventListener('touchmove', move, { passive: false });
   canvas.addEventListener('touchend', end);
+  canvas.addEventListener('touchcancel', end);
 }
 function clearSignature() {
   const canvas = document.getElementById('sigCanvas');
