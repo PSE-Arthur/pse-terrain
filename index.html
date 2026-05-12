@@ -658,6 +658,7 @@
       <button class="sig-clear" onclick="clearSignature()">✕ Effacer</button>
     </div>
     <div class="sig-hint">Faites signer le client dans le cadre ci-dessus</div>
+    <div class="sig-required" id="sigRequired">✋ La signature du client est obligatoire pour continuer</div>
   </div>
 
   <div class="card" style="border-color: var(--vert-clair);">
@@ -667,7 +668,7 @@
 
   <div class="bottom-bar">
     <button class="btn-back" onclick="goTo('screen-sortie', 'SORTIE')">←</button>
-    <button class="btn-main" id="btnEnvoiSortie" onclick="envoyerSortie()">ENVOYER SORTIE ✓</button>
+    <button class="btn-main" id="btnEnvoiSortie" onclick="preEnvoyer()">ENVOYER SORTIE ✓</button>
   </div>
 </div>
 
@@ -770,6 +771,29 @@
   </div>
 </div>
 
+<!-- ═══════════════════════════════════════════
+     MODAL — CONFIRMATION ENVOI
+════════════════════════════════════════════ -->
+<div class="confirm-overlay" id="confirmOverlay">
+  <div class="confirm-sheet">
+    <div class="confirm-title">⚠️ CONFIRMER L'ENVOI</div>
+    <div style="font-size:13px;color:#888;margin-bottom:4px">Vérifiez avant de valider</div>
+    <div class="confirm-recap" id="confirmRecap"></div>
+    <div class="geo-badge" id="geoBadge">
+      <span class="geo-icon">📍</span>
+      <span id="geoText">Localisation en cours...</span>
+    </div>
+    <div class="confirm-check-wrap" onclick="toggleConfirmCheck()">
+      <div class="confirm-checkbox" id="confirmCheckbox"></div>
+      <div class="confirm-text">Je confirme que tout le matériel listé a bien été chargé, vérifié et remis au client. Je suis responsable de ce qui est noté.</div>
+    </div>
+    <div class="confirm-btns">
+      <button class="confirm-send" id="confirmSendBtn" onclick="doEnvoyer()">✓ VALIDER ET ENVOYER</button>
+      <button class="confirm-cancel" onclick="closeConfirm()">← Revenir corriger</button>
+    </div>
+  </div>
+</div>
+
 <script>
 // ═══════════ CONFIGURATION ═══════════
 const FORMSPREE_ID = 'xzdoyalo';
@@ -796,6 +820,8 @@ const CATALOGUE = [
 
 // ═══════════ STATE ═══════════
 let currentMode = 'SORTIE'; // 'SORTIE' | 'RETOUR'
+let geoPosition = null; // stores GPS coords
+let confirmChecked = false;
 let eventInfo = {};
 let articles = []; // [{...catalogue, qty: N, checked: bool, isSurplus: bool}]
 let signatureData = null;
@@ -1067,6 +1093,75 @@ function clearSignature() {
   canvas.classList.remove('signed');
 }
 
+// ═══════════ PRE-SEND: CONFIRMATION + GEO ═══════════
+function preEnvoyer() {
+  // Check signature
+  if (!sigHasData) {
+    document.getElementById('sigRequired').classList.add('show');
+    document.getElementById('sigCanvas').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
+  document.getElementById('sigRequired').classList.remove('show');
+
+  // Build recap
+  const checked = articles.filter(a => a.checked && a.qty > 0);
+  const surplus = checked.filter(a => a.isSurplus);
+  let recap = `<strong>${eventInfo.nom}</strong> · ${eventInfo.employe}<br>`;
+  recap += `📅 ${eventInfo.date} ${eventInfo.heure} · 📍 ${eventInfo.lieu || 'Lieu non renseigné'}<br>`;
+  recap += `👤 Client: ${eventInfo.client || 'Non renseigné'}<br><br>`;
+  recap += checked.map(a => `${a.emoji || '•'} ${a.nom}${a.isSurplus ? ' ⚡' : ''} : <strong>${a.qty}</strong>`).join('<br>');
+  if (surplus.length > 0) recap += `<br><br>⚡ <strong>${surplus.length} surplus</strong> de dernière minute`;
+  document.getElementById('confirmRecap').innerHTML = recap;
+
+  // Reset confirm state
+  confirmChecked = false;
+  document.getElementById('confirmCheckbox').className = 'confirm-checkbox';
+  document.getElementById('confirmSendBtn').className = 'confirm-send';
+
+  // Open overlay
+  document.getElementById('confirmOverlay').classList.add('open');
+
+  // Get geolocation
+  document.getElementById('geoText').textContent = 'Récupération de la position...';
+  document.getElementById('geoBadge').style.background = 'var(--vert-clair)';
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        geoPosition = { lat: pos.coords.latitude.toFixed(5), lng: pos.coords.longitude.toFixed(5), acc: Math.round(pos.coords.accuracy) };
+        document.getElementById('geoText').textContent = `Position enregistrée ✓ (précision ±${geoPosition.acc}m)`;
+        document.getElementById('geoBadge').style.background = 'var(--vert-clair)';
+      },
+      () => {
+        geoPosition = null;
+        document.getElementById('geoText').textContent = 'Position non disponible (GPS désactivé)';
+        document.getElementById('geoBadge').style.background = '#f5f5f5';
+        document.getElementById('geoBadge').style.color = '#aaa';
+      },
+      { timeout: 8000, enableHighAccuracy: true }
+    );
+  } else {
+    document.getElementById('geoText').textContent = 'GPS non supporté sur cet appareil';
+  }
+}
+
+function toggleConfirmCheck() {
+  confirmChecked = !confirmChecked;
+  const cb = document.getElementById('confirmCheckbox');
+  const btn = document.getElementById('confirmSendBtn');
+  cb.className = 'confirm-checkbox' + (confirmChecked ? ' checked' : '');
+  cb.textContent = confirmChecked ? '✓' : '';
+  btn.className = 'confirm-send' + (confirmChecked ? ' ready' : '');
+}
+
+function closeConfirm() {
+  document.getElementById('confirmOverlay').classList.remove('open');
+}
+
+async function doEnvoyer() {
+  closeConfirm();
+  await envoyerSortie();
+}
+
 // ═══════════ ENVOYER SORTIE ═══════════
 async function envoyerSortie() {
   const btn = document.getElementById('btnEnvoiSortie');
@@ -1098,6 +1193,8 @@ async function envoyerSortie() {
     surplus: surplus.length > 0 ? surplus.map(a => `${a.nom} x${a.qty}`).join(', ') : 'Aucun',
     signature_client: signatureData ? 'OUI (signature électronique recueillie)' : 'NON',
     commentaire: document.getElementById('sigComment').value || '-',
+    geolocalisation: geoPosition ? `Lat: ${geoPosition.lat}, Lng: ${geoPosition.lng} (±${geoPosition.acc}m) — https://maps.google.com/?q=${geoPosition.lat},${geoPosition.lng}` : 'Non disponible',
+    horodatage_envoi: new Date().toLocaleString('fr-FR'),
   };
 
   // Save to local storage
