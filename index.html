@@ -648,6 +648,87 @@
   }
   .sig-required.show { display: block; }
 
+
+  /* ── RETOUR TABLE ── */
+  .retour-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .retour-table th {
+    background: var(--noir);
+    color: rgba(255,255,255,0.7);
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    padding: 8px 6px;
+    text-align: center;
+  }
+  .retour-table th:first-child { text-align: left; padding-left: 10px; border-radius: 8px 0 0 0; }
+  .retour-table th:last-child { border-radius: 0 8px 0 0; }
+  .retour-table td {
+    padding: 9px 5px;
+    border-bottom: 1px solid #f0f4eb;
+    vertical-align: middle;
+    text-align: center;
+  }
+  .retour-table td:first-child { text-align: left; padding-left: 10px; font-weight: 600; font-size: 12px; }
+  .retour-table tr:last-child td { border-bottom: none; }
+  .retour-table tr:hover td { background: #f9fdf3; }
+  .qty-sorti {
+    background: #e8f0fa;
+    color: #2c5282;
+    font-weight: 700;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 13px;
+    display: inline-block;
+  }
+  .diff-chip {
+    font-size: 12px;
+    font-weight: 700;
+    padding: 4px 8px;
+    border-radius: 6px;
+    display: inline-block;
+    min-width: 36px;
+  }
+  .diff-ok   { background: #d4f7d4; color: #1a6b1a; }
+  .diff-bad  { background: #fde; color: #c0392b; }
+  .diff-plus { background: #fff3cd; color: #856404; }
+  .summary-bar {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  .sum-chip {
+    text-align: center;
+    padding: 10px 6px;
+    border-radius: 10px;
+    font-size: 11px;
+  }
+  .sum-chip .num { font-family: "Bebas Neue", sans-serif; font-size: 26px; line-height: 1; display: block; }
+  .sum-ok   { background: #d4f7d4; color: #1a6b1a; }
+  .sum-bad  { background: #fde;    color: #c0392b; }
+  .sum-plus { background: #fff3cd; color: #856404; }
+  .event-picker {
+    width: 100%;
+    padding: 13px 15px;
+    border: 1.5px solid #e0ecd4;
+    border-radius: 12px;
+    font-family: "Outfit", sans-serif;
+    font-size: 15px;
+    background: var(--gris);
+    color: var(--noir);
+    outline: none;
+    appearance: none;
+    margin-bottom: 4px;
+  }
+  .event-picker:focus { border-color: var(--vert); background: #fff; }
+  .status-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 4px;
+  }
+
 </style>
 </head>
 <body>
@@ -797,26 +878,86 @@
 </div>
 
 <!-- ═══════════════════════════════════════════
-     ÉCRAN 4 — RETOUR MATÉRIEL
+     ÉCRAN 3b — SÉLECTION ÉVÉNEMENT RETOUR
 ════════════════════════════════════════════ -->
-<div class="screen" id="screen-retour">
-  <div class="progress-bar"><div class="progress-fill" style="width:85%"></div></div>
-  <div class="screen-title">RETOUR MATÉRIEL</div>
-  <div class="screen-sub">Contrôlez chaque article. Modifiez la quantité réellement rendue.</div>
+<div class="screen" id="screen-retour-select">
+  <div class="progress-bar"><div class="progress-fill" style="width:70%"></div></div>
+  <div class="screen-title">🔁 RETOUR MATÉRIEL</div>
+  <div class="screen-sub">Sélectionnez l'événement dont le matériel revient</div>
 
-  <div id="alertRetour" style="display:none;"></div>
-
-  <div class="card" id="retourList">
-    <!-- Généré dynamiquement depuis la sortie -->
+  <div class="card">
+    <div class="card-title">📋 ÉVÉNEMENT CONCERNÉ</div>
+    <div class="field">
+      <label>Choisir l'événement *</label>
+      <select class="event-picker" id="retourEventPicker">
+        <option value="">— Sélectionner un événement —</option>
+      </select>
+    </div>
+    <div id="retourEventInfo" style="display:none; background:var(--gris); border-radius:10px; padding:12px; font-size:13px; color:#555; line-height:1.8; margin-top:8px;"></div>
   </div>
 
-  <div class="card" style="border-color: #ffeeba; background: #fffdf0;">
-    <div class="card-title">📝 Observations retour</div>
-    <textarea id="retourComment" placeholder="Articles abîmés, manquants, remarques..."></textarea>
+  <div class="card">
+    <div class="card-title">👤 EMPLOYÉ QUI CONTRÔLE</div>
+    <div class="field">
+      <label>Votre nom *</label>
+      <input type="text" id="retourEmploye" placeholder="Prénom Nom">
+    </div>
   </div>
 
   <div class="bottom-bar">
     <button class="btn-back" onclick="goTo('screen-home', 'ACCUEIL')">←</button>
+    <button class="btn-main" onclick="validerSelectRetour()">CONTRÔLER →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     ÉCRAN 4 — TABLEAU RETOUR MATÉRIEL
+════════════════════════════════════════════ -->
+<div class="screen" id="screen-retour">
+  <div class="progress-bar"><div class="progress-fill" style="width:85%"></div></div>
+  <div class="screen-title">CONTRÔLE RETOUR</div>
+  <div class="screen-sub" id="retourSubtitle">Saisissez les quantités réellement rendues</div>
+
+  <!-- Compteurs résumé -->
+  <div class="summary-bar">
+    <div class="sum-chip sum-ok">
+      <span class="num" id="sumOk">0</span>
+      Articles OK
+    </div>
+    <div class="sum-chip sum-bad">
+      <span class="num" id="sumBad">0</span>
+      Manquants
+    </div>
+    <div class="sum-chip sum-plus">
+      <span class="num" id="sumPlus">0</span>
+      Surplus
+    </div>
+  </div>
+
+  <div id="alertRetour" style="display:none; margin-bottom:12px;"></div>
+
+  <div class="card" style="padding:0; overflow:hidden;">
+    <table class="retour-table">
+      <thead>
+        <tr>
+          <th>Article</th>
+          <th>Livré</th>
+          <th>Rendu</th>
+          <th>Écart</th>
+        </tr>
+      </thead>
+      <tbody id="retourTableBody">
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card" style="border-color: #ffeeba; background: #fffdf0; margin-top: 12px;">
+    <div class="card-title">📝 Observations</div>
+    <textarea id="retourComment" placeholder="Articles abîmés, photos à prendre, remarques client..."></textarea>
+  </div>
+
+  <div class="bottom-bar">
+    <button class="btn-back" onclick="goTo('screen-retour-select', 'RETOUR')">←</button>
     <button class="btn-main" onclick="envoyerRetour()">ENVOYER RETOUR ✓</button>
   </div>
 </div>
@@ -1014,8 +1155,7 @@ function validateEvent() {
     renderSortie();
     goTo('screen-sortie', 'SORTIE');
   } else {
-    initRetour();
-    goTo('screen-retour', 'RETOUR');
+    initRetourSelect();
   }
 }
 
@@ -1101,12 +1241,7 @@ function setRetourQty(id, val) {
   const a = articles.find(x => x.id === id);
   if (!a) return;
   a.qtyRetour = Math.max(0, parseInt(val) || 0);
-  const st = document.getElementById('retstatus_' + id);
-  if (st) {
-    const diff = a.qtyRetour - (a.qty || 0);
-    st.textContent = diff === 0 ? '✅' : diff < 0 ? '⚠️' : '➕';
-    st.className = 'retour-status ' + (diff === 0 ? 'status-ok' : diff < 0 ? 'status-bad' : 'status-warn');
-  }
+  refreshRetourRow(a);
 }
 function changeQty(id, delta) {
   const a = articles.find(x => x.id === id);
@@ -1368,71 +1503,123 @@ async function envoyerSortie() {
   btn.textContent = 'ENVOYER SORTIE ✓'; btn.disabled = false;
 }
 
-// ═══════════ RETOUR ═══════════
-function initRetour() {
-  // Try to get last sortie from history
-  const lastSortie = history.find(h => h.type === 'SORTIE' && h.evenement === eventInfo.nom);
-  const list = document.getElementById('retourList');
-
-  if (lastSortie && lastSortie.articlesData) {
-    articles = lastSortie.articlesData.map(a => ({ ...a, qtyRetour: a.qty }));
+// ═══════════ RETOUR — SÉLECTION ÉVÉNEMENT ═══════════
+function initRetourSelect() {
+  const picker = document.getElementById('retourEventPicker');
+  // Get all SORTIE events from history
+  const sorties = history.filter(h => h.type === 'SORTIE');
+  picker.innerHTML = '<option value="">— Sélectionner un événement —</option>';
+  if (sorties.length === 0) {
+    picker.innerHTML += '<option value="__manual__">Saisie manuelle (pas de fiche de sortie)</option>';
   } else {
-    // Use full catalogue with 0
+    sorties.forEach((s, i) => {
+      picker.innerHTML += `<option value="${i}">${s.evenement} · ${s.date} · ${s.employe}</option>`;
+    });
+    picker.innerHTML += '<option value="__manual__">Autre événement (saisie manuelle)</option>';
+  }
+  picker.onchange = () => {
+    const infoEl = document.getElementById('retourEventInfo');
+    if (picker.value === '' || picker.value === '__manual__') {
+      infoEl.style.display = 'none';
+      return;
+    }
+    const s = sorties[parseInt(picker.value)];
+    if (!s) return;
+    const arts = s.articlesData || [];
+    infoEl.style.display = 'block';
+    infoEl.innerHTML = `<strong>${s.evenement}</strong><br>📅 ${s.date} · 👤 ${s.employe}<br>📦 ${arts.length} article(s) livré(s)<br>`
+      + arts.map(a => `${a.emoji||'•'} ${a.nom} : <strong>${a.qty}</strong>`).join(' · ');
+  };
+  goTo('screen-retour-select', 'RETOUR');
+}
+
+function validerSelectRetour() {
+  const picker = document.getElementById('retourEventPicker');
+  const employe = document.getElementById('retourEmploye').value.trim();
+  if (!picker.value) { alert('Sélectionnez un événement.'); return; }
+  if (!employe) { alert('Renseignez votre nom.'); return; }
+  const sorties = history.filter(h => h.type === 'SORTIE');
+  eventInfo.employe = employe;
+  if (picker.value === '__manual__') {
+    eventInfo.nom = 'Saisie manuelle';
     articles = CATALOGUE.map(a => ({ ...a, qty: 0, checked: true, isSurplus: false, qtyRetour: 0 }));
     document.getElementById('alertRetour').style.display = 'block';
     document.getElementById('alertRetour').innerHTML =
-      `<div class="alert-banner alert-warn">⚠️ Aucune fiche de sortie trouvée pour cet événement. Saisissez manuellement les quantités retournées.</div>`;
+      `<div class="alert-banner alert-warn">⚠️ Saisie manuelle — aucune fiche de sortie associée. Renseignez les quantités livrées et rendues.</div>`;
+  } else {
+    const s = sorties[parseInt(picker.value)];
+    eventInfo.nom = s.evenement;
+    eventInfo.date = s.date;
+    articles = (s.articlesData || []).map(a => ({ ...a, qtyRetour: a.qty }));
+    document.getElementById('alertRetour').style.display = 'none';
   }
+  document.getElementById('retourSubtitle').textContent = `${eventInfo.nom} · Contrôle par ${employe}`;
   renderRetour();
+  goTo('screen-retour', 'RETOUR');
 }
 
+// ═══════════ RETOUR — TABLEAU ═══════════
 function renderRetour() {
-  const list = document.getElementById('retourList');
-  const active = articles.filter(a => a.qty > 0 || a.qtyRetour > 0);
-  if (active.length === 0) {
-    // show all catalogue
-    articles.forEach(a => a.qty = 0);
-  }
-  const toShow = articles.filter(a => a.qty > 0);
-
-  if (toShow.length === 0) {
-    list.innerHTML = `<div style="font-size:13px;color:#aaa;text-align:center;padding:20px;">Saisissez les quantités retournées ci-dessous</div>` +
-      CATALOGUE.map(a => renderRetourRow(a)).join('');
-    return;
-  }
-  list.innerHTML = `<div class="card-title">📦 Articles sortis → Quantité retournée</div>` +
-    toShow.map(a => renderRetourRow(a)).join('');
+  const tbody = document.getElementById('retourTableBody');
+  const toShow = articles.filter(a => a.qty > 0 || a.qtyRetour > 0);
+  const list = toShow.length > 0 ? toShow : articles;
+  tbody.innerHTML = list.map(a => renderRetourRow(a)).join('');
+  updateSummary();
 }
 
 function renderRetourRow(a) {
-  const diff = (a.qtyRetour || 0) - (a.qty || 0);
-  const statusIcon = diff === 0 ? '✅' : diff < 0 ? '⚠️' : '➕';
-  const statusClass = diff === 0 ? 'status-ok' : diff < 0 ? 'status-bad' : 'status-warn';
-  return `
-    <div class="retour-row">
-      <div class="retour-name">${a.emoji || ''} ${a.nom}</div>
-      ${a.qty > 0 ? `<div class="retour-sortie">Sorti: ${a.qty}</div>` : ''}
-      <div class="retour-qty-wrap">
-        <button class="qty-btn" onclick="changeRetourQty('${a.id}', -1)">−</button>
-        <input type="number" class="qty-display" id="retqty_${a.id}" value="${a.qtyRetour || 0}" min="0" inputmode="numeric" onchange="setRetourQty(''+a.id+'', this.value)" onfocus="this.select()">
-        <button class="qty-btn" onclick="changeRetourQty('${a.id}', 1)">+</button>
+  const rendu = a.qtyRetour ?? a.qty ?? 0;
+  const diff = rendu - (a.qty || 0);
+  let diffHtml = '';
+  if (a.qty > 0) {
+    const cls = diff === 0 ? 'diff-ok' : diff < 0 ? 'diff-bad' : 'diff-plus';
+    const sign = diff > 0 ? '+' : '';
+    diffHtml = `<span class="diff-chip ${cls}">${sign}${diff}</span>`;
+  } else {
+    diffHtml = `<span style="color:#ccc;font-size:12px;">—</span>`;
+  }
+  return `<tr id="trow_${a.id}">
+    <td>${a.emoji || ''} ${a.nom}${a.isSurplus ? ' <span class="surplus-badge">S</span>' : ''}</td>
+    <td>${a.qty > 0 ? `<span class="qty-sorti">${a.qty}</span>` : '<span style="color:#ddd">—</span>'}</td>
+    <td>
+      <div style="display:flex;align-items:center;justify-content:center;gap:4px;">
+        <button class="qty-btn" style="width:26px;height:26px;font-size:14px;" onclick="changeRetourQty('${a.id}',-1)">−</button>
+        <input type="number" class="qty-display" style="width:50px;font-size:14px;" id="retqty_${a.id}" value="${rendu}" min="0" inputmode="numeric" onchange="setRetourQty('${a.id}',this.value)" onfocus="this.select()">
+        <button class="qty-btn" style="width:26px;height:26px;font-size:14px;" onclick="changeRetourQty('${a.id}',1)">+</button>
       </div>
-      <div class="retour-status ${statusClass}" id="retstatus_${a.id}">${statusIcon}</div>
-    </div>`;
+    </td>
+    <td id="retdiff_${a.id}">${diffHtml}</td>
+  </tr>`;
+}
+
+function updateSummary() {
+  const active = articles.filter(a => a.qty > 0);
+  const ok   = active.filter(a => (a.qtyRetour ?? a.qty) === a.qty).length;
+  const bad  = active.filter(a => (a.qtyRetour ?? a.qty) < a.qty).length;
+  const plus = active.filter(a => (a.qtyRetour ?? a.qty) > a.qty).length;
+  document.getElementById('sumOk').textContent  = ok;
+  document.getElementById('sumBad').textContent = bad;
+  document.getElementById('sumPlus').textContent = plus;
 }
 
 function changeRetourQty(id, delta) {
   const a = articles.find(x => x.id === id);
   if (!a) return;
-  a.qtyRetour = Math.max(0, (a.qtyRetour || 0) + delta);
-  const el = document.getElementById(`retqty_${id}`);
-  const st = document.getElementById(`retstatus_${id}`);
-  if (el) { if (el.tagName === "INPUT") el.value = a.qtyRetour; else el.textContent = a.qtyRetour; }
-  if (st) {
-    const diff = a.qtyRetour - (a.qty || 0);
-    st.textContent = diff === 0 ? '✅' : diff < 0 ? '⚠️' : '➕';
-    st.className = `retour-status ${diff === 0 ? 'status-ok' : diff < 0 ? 'status-bad' : 'status-warn'}`;
+  a.qtyRetour = Math.max(0, (a.qtyRetour ?? a.qty ?? 0) + delta);
+  refreshRetourRow(a);
+}
+
+function refreshRetourRow(a) {
+  const el = document.getElementById(`retqty_${a.id}`);
+  if (el) el.value = a.qtyRetour;
+  const diffEl = document.getElementById(`retdiff_${a.id}`);
+  if (diffEl && a.qty > 0) {
+    const diff = a.qtyRetour - a.qty;
+    const cls = diff === 0 ? 'diff-ok' : diff < 0 ? 'diff-bad' : 'diff-plus';
+    const sign = diff > 0 ? '+' : '';
+    diffEl.innerHTML = `<span class="diff-chip ${cls}">${sign}${diff}</span>`;
   }
+  updateSummary();
 }
 
 // ═══════════ ENVOYER RETOUR ═══════════
