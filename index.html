@@ -918,7 +918,14 @@
     </div>
     <div class="confirm-btns">
       <button class="confirm-send" id="confirmSendBtn" onclick="doEnvoyer()">✓ VALIDER ET ENVOYER</button>
-      <button class="confirm-cancel" onclick="closeConfirm()">← Revenir corriger</button>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:2px;">
+        <button class="confirm-cancel" onclick="goBackTo('screen-sortie', 'SORTIE')" style="font-size:12px;padding:12px 8px;">
+          ✏️ Modifier<br>les articles
+        </button>
+        <button class="confirm-cancel" onclick="goBackTo('screen-signature', 'SIGNATURE')" style="font-size:12px;padding:12px 8px;">
+          ✍️ Modifier<br>la signature
+        </button>
+      </div>
     </div>
   </div>
 </div>
@@ -1282,8 +1289,22 @@ function toggleConfirmCheck() {
   btn.className = 'confirm-send' + (confirmChecked ? ' ready' : '');
 }
 
+function goBackTo(screenId, label) {
+  const overlay = document.getElementById('confirmOverlay');
+  overlay.classList.remove('open');
+  overlay.style.display = 'none';
+  setTimeout(() => {
+    overlay.style.display = '';
+    goTo(screenId, label);
+  }, 50);
+}
+
 function closeConfirm() {
-  document.getElementById('confirmOverlay').classList.remove('open');
+  const overlay = document.getElementById('confirmOverlay');
+  overlay.classList.remove('open');
+  overlay.style.display = 'none';
+  // Re-enable after short delay so CSS can reset
+  setTimeout(() => { overlay.style.display = ''; }, 50);
 }
 
 async function doEnvoyer() {
